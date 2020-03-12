@@ -4,11 +4,11 @@
 </h2>
 <h1>Edit RSVP for <%= @event[:title] %></h1>
 
-<form action="/rsvps/<%= @rsvp[:id] %>/update" method="post">
+<form action="/rsvps/<%= @rsvp[:id] %>/update" method="post"> #note differenece here to new rsvp
   <div class="form-group">
     <label>Are you going?</label>
-    <select class="form-control" name="going">
-      <% if @rsvp[:going] %>
+    <select class="form-control" name="going"> #need to pre-populate form with existing RSVP data
+      <% if @rsvp[:going] %> 
         <option value="1" selected>Yes</option>
         <option value="0">No</option>
       <% else %>
