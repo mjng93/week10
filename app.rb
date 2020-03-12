@@ -23,6 +23,13 @@ before do
     @current_user = users_table.where(id: session["user_id"]).to_a[0]
 end
 
+get "/send_text" do
+    account_sid = ENV["TWILIO_ACCOUNT_SID"] #need to store as an environment variable 
+    #auth_token = 
+
+end 
+
+
 # homepage and list of events (aka "index")
 get "/" do
     puts "params: #{params}"
@@ -82,9 +89,11 @@ post "/rsvps/:id/update" do
   
     @rsvp = rsvps_table.where(id: params["id"]).to_a[0] #remember, this route is stateless, so we only know the id of the rsvp
     @event = events_table.where(id: @rsvp[:event_id]).to_a[0]
+    if @current_user && @current_user[:id]==@rsvp[:user_id]
     rsvps_table.where(id: params["id"]).update(
         comments: params["comments"],
         going: params["going"])
+    end
 
     view "update_rsvp"
 end
@@ -92,8 +101,9 @@ end
 get "/rsvps/:id/destroy" do
     puts "params: #{params}"
 
-    rsvp = rsvps_table.where(id: params["id"]).to_a[0]
-    @event = events_table.where(id: rsvp[:event_id]).to_a[0]
+    
+    @rsvp = rsvps_table.where(id: params["id"]).to_a[0]
+    @event = events_table.where(id: @rsvp[:event_id]).to_a[0]
 
     rsvps_table.where(id: params["id"]).delete
 
@@ -109,12 +119,18 @@ end
 post "/users/create" do
     puts "params: #{params}"
 
+existing_user = users_table.where(email: params["email"]).to_a[0]
+if existing_user
+    view "error"
+else
     users_table.insert(
         name: params["name"],
         email: params["email"],
         password: BCrypt::Password.create(params["password"])
     )
     view "create_user"
+end
+
 end
 
 # display the login form (aka "new")
@@ -146,5 +162,5 @@ end
 get "/logout" do
     # remove encrypted cookie for logged out user
     session["user_id"] = nil
-    view "logout"
+    redirect "/logins/new"
 end
